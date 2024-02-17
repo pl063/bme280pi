@@ -10,7 +10,9 @@ For more information about how to use the `Sensor` class, have a look at the
 documentation of the `Sensor` class itself.
 """
 
-import smbus
+from smbus2 import SMBus
+import logging
+logging.basicConfig(filename="driver.log", encoding="utf-8", level=logging.DEBUG)
 
 from bme280pi.physics import calculate_abs_humidity, convert_pressure, \
     convert_temperature, round_to_n_significant_digits, pressure_at_sea_level
@@ -67,8 +69,10 @@ class Sensor:
         """
         self.address = address
         self.bus = self._initialize_bus()
+        logging.info("initialized bus, determining chip id")
 
         self.chip_id, self.chip_version = self._get_info_about_sensor()
+        logging.info("got chip info")
 
     def get_temperature(self, unit='C'):
         """Get a temperature reading.
@@ -152,6 +156,7 @@ class Sensor:
         Returns:
             dict: dictionary with current temperature, humidity, and pressure
         """
+        logging.info("calling readout")
         return read_sensor(bus=self.bus,
                            address=self.address)
 
@@ -216,7 +221,7 @@ class Sensor:
             argument = 0
 
         try:
-            bus = smbus.SMBus(argument)
+            bus = SMBus(argument)
         except FileNotFoundError:
             raise I2CException("SMBus raised a FileNotFoundError; this is " +
                                "usually due to the i2c interface being " +
